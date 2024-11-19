@@ -42,21 +42,19 @@ class FLAN():
                         self.Y_hat = torch.clip(self.Y_hat, 0.0, 1)
                 Y = self.Y_hat
 
-
     def embed(self, X, Y, Y_hat):
+
         coe2 = 1.0 / self.args.beta
         res = torch.mm(torch.transpose(X, 0, 1), X)  # H.T* H
         res2 = torch.mm(torch.transpose(X, 0, 1), Y_hat)  # H.T* Y
         inv = torch.inverse(self.I + coe2 * res)  #
-        res3 = torch.mm(inv, res2)  #
+        res3 = torch.mm(inv, res2)  # B中第二项的后面一部分
         B = coe2 * Y - coe2 * coe2 * torch.mm(X, res3)  # B
-        tmp = torch.mm(torch.transpose(Y, 0, 1), B)  # Y.T * B
-        part1 = torch.mm(X, tmp)
-        part2 = (- self.args.alpha / 2) * (self.distance@B) # torch.mm(distance, B)
+        tmp = torch.mm(torch.transpose(X, 0, 1), B)  # H.T * B
+        part1 = torch.mm(Y, tmp)
 
-        Y_hat = part1 + part2
+        Y_hat = part1
         return  Y_hat
-
     def get_X(self):
         # for i in range(self.epoch):
         #     for j in range(self.LPA_step):
@@ -72,31 +70,27 @@ class FLAN():
 
         return res
 
+    # new
     def get_aligned_graph(self):
         if self.A_align == None:
             with torch.no_grad():
                 coe2 = 1.0 / self.args.beta
                 res = torch.mm(torch.transpose(self.X, 0, 1), self.X)  # H.T* H
-                inv = torch.inverse(self.I + coe2 * res)
-                res2 = torch.mm(torch.transpose(self.Y_hat, 0, 1), self.X) # Y.T*H
+                inv = torch.inverse(self.I + coe2 * res)  # Q中的逆矩阵
+                res2 = torch.mm(torch.transpose(self.X, 0, 1), self.X) # X.TH
                 res3 = torch.mm(res2, inv)
-                res4 = torch.mm(self.X, res3)
+                res4 = torch.mm(self.Y_hat, res3)
                 res5 = coe2 * coe2 * torch.mm(res4,torch.transpose(self.X, 0, 1))
-                part1 = coe2 *torch.mm(self.X, torch.transpose(self.Y_hat, 0, 1)) - res5
-
-                res7 = torch.mm(self.X, inv) # H*逆矩阵
-                res8 = coe2*torch.eye(self.X.shape[0]).to(self.args.device) - coe2*coe2*torch.mm(res7, torch.transpose(self.X, 0, 1))
-                part2 = (- self.args.alpha / 2)*(self.distance @ res8)
+                part1 = coe2 *torch.mm(self.Y_hat, torch.transpose(self.X, 0, 1)) - res5 #
 
 
-                self.A_align = part1 + part2
+                self.A_align = part1
 
         return self.A_align
-
     def get_Y_hat(self):
         return self.Y_hat
 
-    def get_sparse_A(self): # 考虑到有负值，所以将接近0的给mask掉
+    def get_sparse_A(self): #
         kthvalue = torch.kthvalue(
             torch.abs(self.A_align).view(self.A_align.shape[0] * self.A_align.shape[1], 1).T,
             int(self.A_align.shape[0] * self.A_align.shape[0] * self.edge_rate))[0]
@@ -143,11 +137,31 @@ class FLAN_GCN(nn.Module):
         x2 = F.dropout(x2, self.dropout, training=self.training)
 
         x1 = self.gc2(x1, adj)
-        x2 = self.gc2(x2, adj) # adj
+        x2 = self.gc2(x2, adj2) # adj
 
         x = (1 - self.gamma)*x1 + self.gamma*x2
         return x, self.projection(x1), self.projection(x2)
 
+class FLAN_GCN_onelayer(nn.Module):
+    def __init__(self, args, nfeat, nhid, nclass, dropout, tau=0.0):
+        super(FLAN_GCN_onelayer, self).__init__()
+
+        self.gc1 = GraphConvolution(nfeat, nclass)
+        self.dropout = dropout
+        self.gamma = args.gamma
+        self.fc = nn.Linear(nclass, nclass)
+
+    def projection(self, z: torch.Tensor) -> torch.Tensor:
+        z = F.elu(self.fc(z))
+        return z
+
+    def forward(self, x, adj, adj2):
+        x = F.dropout(x, self.dropout, training=self.training)
+        x1 = F.relu(self.gc1(x, adj))
+        x2 = F.relu(self.gc1(x, adj2))
+
+        x = (1 - self.gamma)*x1 + self.gamma*x2
+        return x, self.projection(x1), self.projection(x2)
 
 class FLAN_GCN2(nn.Module):
     def __init__(self, args, nfeat, nhid, nclass, dropout, tau=0.0):

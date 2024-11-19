@@ -177,8 +177,9 @@ def sim(z1: torch.Tensor, z2: torch.Tensor):
     # return torch.diagonal(torch.mm(z1, z2.t())).mean()
     return torch.sum((z1 - z2)**2, dim=1).mean()
 
-def conresive_loss(X1, X2, F_MASK):
+def conresive_loss(X1, X2, output=None, F_MASK=None):
     UNF_MASK = ~F_MASK
+    probs = torch.exp(output)
     f = lambda x: torch.exp(x / args.tau)
     pos_sim = f(sim(X1[F_MASK], X2[F_MASK]))
     neg_sim = f(sim(X1[UNF_MASK], X2[UNF_MASK]))
@@ -192,7 +193,9 @@ def conresive_loss(X1, X2, F_MASK):
     intra_c_2 = torch.exp(F.normalize(intra_c_2, p=2, dim=1)).sum()
     loss_uni += torch.log(intra_c_2).mean()
 
-    return - torch.log(pos_sim / (pos_sim + neg_sim)) + 0.1*loss_uni # 0.1
+    entropy = torch.mean(-torch.sum(probs * torch.log(probs + 1e-10), dim=1))
+
+    return - torch.log(pos_sim / (pos_sim + neg_sim)) + entropy  # 0.1*loss_uni # 0.1
 
 all_val = []
 all_test = []
