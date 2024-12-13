@@ -1,4 +1,4 @@
-# ELU-GCN:  Effectively Label-Utilizing Graph Convolutional Network
+# Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks
 
 This repository contains an implementation of Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks.
 
