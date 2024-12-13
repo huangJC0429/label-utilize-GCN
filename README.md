@@ -1,6 +1,6 @@
 # ELU-GCN:  Effectively Label-Utilizing Graph Convolutional Network
 
-This repository contains an implementation of ELU-GCN:  Effectively Label-Utilizing Graph Convolutional Network.
+This repository contains an implementation of Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks.
 
 ## Dependencies
 - CUDA 10.2.89
