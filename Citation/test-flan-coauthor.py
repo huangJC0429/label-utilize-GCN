@@ -29,7 +29,7 @@ parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rat
 parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
 parser.add_argument('--hidden', type=int, default=8, help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5, help='Dropout rate (1 - keep probability).')
-parser.add_argument('--edge_rate', type=float, default=0.9, help='sparse feature distance matrix.') # 0.9代表mask90%的
+parser.add_argument('--edge_rate', type=float, default=0.9, help='sparse feature distance matrix.') 
 parser.add_argument('--edge_rate2', type=float, default=0.9, help='sparse learned align_A.')
 
 parser.add_argument('--tem', type=float, default=0.5, help='Sharpening temperature')
@@ -94,7 +94,7 @@ kthvalue = torch.kthvalue(
     int(feature_distance.shape[0] * feature_distance.shape[1] * args.edge_rate))[0]
 mask = (feature_distance > kthvalue).detach().float()
 feature_distance = (feature_distance * mask)
-# 转化为torch_sparse
+
 feature_distance = convert_tensor_to_sparse_tensor(feature_distance)
 # print(feature_distance.size(0))
 # exit()
@@ -146,7 +146,7 @@ for i in trange(args.runs, desc='Run Train'):
     args.train_mask = idx_train
     args.c = max(labels) + 1
 
-    aligned_labels = torch.load("./aligned_nodes/" + args.dataset + "_aligned_label"+str(i)+".pt")  # 对齐节点标签传播的标签
+    aligned_labels = torch.load("./aligned_nodes/" + args.dataset + "_aligned_label"+str(i)+".pt") 
     F_mask = torch.load("./UNF_mask/" + args.dataset + "_F_mask"+str(i)+".pt")
     args.mask = (args.train_mask | F_mask)
     aligned_labels = F.one_hot(aligned_labels)
@@ -158,10 +158,10 @@ for i in trange(args.runs, desc='Run Train'):
     flan.fit(X_MLP, k_lable.float())
 
     # print(flan.Y_hat)
-    # 获取SX
+  
     X_hat = flan.get_X()
 
-    # 获取邻接矩阵
+    
     aligned_A = flan.get_aligned_graph()
     # print(aligned_A)
     sparse_aligned_A = flan.get_sparse_A().detach()
