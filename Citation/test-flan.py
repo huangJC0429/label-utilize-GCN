@@ -119,14 +119,14 @@ flan.fit(X_MLP, k_lable.float())
 # print(flan.Y_hat)
 
 
-# 获取SX
+
 X_hat = flan.get_X()
 # print(X_hat)
 # exit()
 acc_test = accuracy(flan.Y_hat[idx_test], labels[idx_test])
 # print(acc_test)
 
-# 获取邻接矩阵
+
 aligned_A = flan.get_aligned_graph()
 # print(aligned_A)
 sparse_aligned_A = flan.get_sparse_A().detach()
