@@ -29,7 +29,7 @@ parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rat
 parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
 parser.add_argument('--hidden', type=int, default=8, help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5, help='Dropout rate (1 - keep probability).')
-parser.add_argument('--edge_rate', type=float, default=0.9, help='sparse feature distance matrix.')  # 0.9代表mask90%的
+parser.add_argument('--edge_rate', type=float, default=0.9, help='sparse feature distance matrix.') 
 parser.add_argument('--edge_rate2', type=float, default=0.9, help='sparse learned align_A.')
 
 parser.add_argument('--tem', type=float, default=0.5, help='Sharpening temperature')
@@ -96,7 +96,7 @@ args.c = max(labels) + 1
 # print(labels[idx_train].shape)
 
 
-aligned_labels = torch.load("./aligned_nodes/" + args.dataset + "_aligned_label.pt")  # 对齐节点标签传播的标签
+aligned_labels = torch.load("./aligned_nodes/" + args.dataset + "_aligned_label.pt")  
 F_mask = torch.load("./UNF_mask/" + args.dataset + "_F_mask.pt")
 args.mask = (args.train_mask | F_mask)
 aligned_labels = F.one_hot(aligned_labels)
@@ -118,11 +118,6 @@ flan.fit(X_MLP, k_lable.float())
 
 # print(flan.Y_hat)
 
-
-# acc_test = accuracy(flan.Y_hat[idx_test], labels[idx_test]) # 首先运行pre_train_MLP是 AAAXW的结果对齐，运行test-lagcn是GCN的结果对齐
-# acc_test = accuracy(flan.Y_hat[idx_test&(~F_mask)], labels[idx_test&(~F_mask)])
-# print(acc_test)
-# print(flan.Y_hat[idx_test&(F_mask)])
 
 # 获取SX
 X_hat = flan.get_X()
