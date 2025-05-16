@@ -1,6 +1,6 @@
 # Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks
 
-This repository contains an implementation of Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks.
+This repository contains an implementation of Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks (ICML2025).
 
 ## Dependencies
 - CUDA 10.2.89
@@ -28,3 +28,14 @@ python pre_train_MLP.py --dataset pubmed --hidden_dim 256
 python pre_train_MLP_coauthor.py --dataset {dataset name}
 ```
 
+## Citation
+'''
+@inproceedings{
+anonymous2025enhancing,
+title={Enhancing the Influence of Labels on Unlabeled Nodes in Graph Convolutional Networks},
+author={Anonymous},
+booktitle={Forty-second International Conference on Machine Learning},
+year={2025},
+url={https://openreview.net/forum?id=afhPCaIRrh}
+}
+'''
